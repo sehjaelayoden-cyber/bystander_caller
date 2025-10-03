@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="login-container">
+<h1 class="title">HOSPITAL BYSTANDER<br/>CALLER</h1>
+<div class="login-box-wrapper">
+<p class="login-message">Please Login in to access this page</p>
+<div class="login-box">
+<form method="POST" action="{{ url_for('login') }}">
+{{ form.csrf_token }}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert" role="alert">{{ message }}</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+<div class="form-group">
+<label for="username" class="form-label">USER NAME</label>
+{{ form.username(class="input-field", id="username", required=true, **{'aria-label': 'Username input field'}) }}
+</div>
+<div class="form-group">
+<label for="password" class="form-label">PASSWORD</label>
+{{ form.password(class="input-field", id="password", required=true, **{'aria-label': 'Password input field'}) }}
+</div>
+<button type="submit" class="submit-btn">Login</button>
+</form>
+</div>
+<div class="login-illustration">
+<img src="{{ url_for('static', filename='images/login-illustration.png') }}" alt="Login illustration" class="illustration-image"/>
+</div>
+</div>
+</div>
+<style>
+body,html{background:#1a1b26!important;margin:0;padding:0;min-height:100vh;overflow:hidden}
+.menu-icon,.sidenav{display:none!important}
+.main-content{padding:0}
+.login-container{background:#1a1b26;display:flex;min-height:100vh;width:100%;flex-direction:column;align-items:center;overflow:hidden;color:#fff;padding:20px}
+.title{font-size:36px;font-family:'Gilroy-Bold',sans-serif;text-align:center;margin-bottom:30px;letter-spacing:1px}
+.login-box-wrapper{background:#1f1d2b;border-radius:30px;width:100%;max-width:400px;padding:30px;display:flex;flex-direction:column;align-items:center}
+.login-message{color:#00c7be;font-size:18px;text-align:center;margin-bottom:30px}
+.login-box{width:100%;background:#1f1d2b;border-radius:20px}
+.form-group{margin-bottom:20px}
+.form-label{display:block;color:#9499a8;font-size:16px;margin-bottom:8px}
+.input-field{width:100%;height:50px;background:#2d303e;border:none;border-radius:12px;padding:0 15px;color:#fff;font-size:16px}
+.submit-btn{width:70%;height:46px;background:#ff2d55;border:none;border-radius:100px;color:#fff;font-size:16px;cursor:pointer;position:relative;left:50%;transform:translateX(-50%);margin:20px 0;display:flex;align-items:center;justify-content:center;height:50px;background:#ff2d55;border:none;border-radius:25px;color:#fff;font-size:16px;cursor:pointer;margin-top:20px}
+.login-illustration{margin-top:30px;width:100%;text-align:center}
+.illustration-image{max-width:80%;height:auto}
+.alert{background:rgba(255,45,85,0.1);color:#ff2d55;padding:10px;border-radius:11px;margin:10px 0;text-align:center}
+@media (max-width:480px){
+.title{font-size:28px}
+.login-box-wrapper{padding:20px}
+.login-message{font-size:16px}
+.input-field{height:45px}
+.submit-btn{height:45px}
+}</style>
+{% endblock %}

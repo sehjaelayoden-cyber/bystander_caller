@@ -1,0 +1,30 @@
+bystander_call/
+├── app.py                  # Main application file
+├── wsgi.py                # WSGI entry point
+├── gunicorn.conf.py       # Gunicorn configuration
+├── render.yaml            # Render deployment config
+├── requirements.txt       # Project dependencies
+├── .env                   # Environment variables
+├── .gitignore            # Git ignore file
+├── models/
+│   ├── __init__.py
+│   ├── user.py           # User model
+├── routes/
+│   ├── user_routes.py
+│   ├── voice_routes.py
+├── utils/
+│   ├── __init__.py
+│   ├── twilio_utils.py  # Twilio integration utilities
+├── static/
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       └── main.js
+└── templates/
+    ├── add_companion.html
+    ├── add_patient.html
+    ├── base.html
+    ├── dashboard.html
+    ├── index.html
+    ├── login.html
+

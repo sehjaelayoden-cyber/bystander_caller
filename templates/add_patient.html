@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="registration-container">
+    <h1 class="title">HOSPITAL BYSTANDER<br>CALLER</h1>
+    <form class="registration-form" method="POST" action="{{ url_for('add_patient') }}" id="patientForm">
+        {{ form.csrf_token }}
+        <h2 class="form-title">Add Patient Details</h2>
+
+        <label for="patient_name" class="input-label">Patient Name</label>
+        {{ form.patient_name(class="input-field", id="patient_name", required=true, **{'aria-label': 'Enter patient name'}) }}
+
+        <label for="phone_number" class="phone-label">Your Phone Number</label>
+        {{ form.phone_number(class="input-field", id="phone_number", type="tel",
+                           pattern="[0-9]{10}", maxlength="10",
+                           placeholder="Enter 10-digit number", required=true,
+                           **{'aria-label': 'Enter your phone number'}) }}
+        <div id="number-status" class="number-status"></div>
+
+        <button type="submit" class="submit-button">Register</button>
+    </form>
+
+</div>
+<img loading="lazy" src="{{ url_for('static', filename='images/hospital-footer.png') }}" class="footer-image" alt="Hospital illustration" />
+<style>
+.registration-container {
+    background-color: rgba(37, 40, 54, 1);
+    display: flex;
+    max-width: 480px;
+    width: 100%;
+    padding: 59px 0 0;
+    flex-direction: column;
+    overflow: hidden;
+    align-items: center;
+    color: #fff;
+    font-weight: 400;
+    text-align: center;
+    margin: 0 auto;
+
+}
+
+.title{font-size:36px;font-family:'Gilroy-Bold',sans-serif;text-align:center;margin-bottom:30px;letter-spacing:1px}
+.registration-form {
+    border-radius: 56px;
+    background-color: rgba(31, 29, 43, 1);
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+    z-index: 10;
+    display: flex;
+    margin-top: 27px;
+    width: 100%;
+    max-width: 390px;
+    flex-direction: column;
+    padding: 30px 29px 62px;
+    font: 17px Inter, sans-serif;
+    position: relative; /* Ensure form stays above the image */
+}
+
+.form-title {
+    color: rgba(0, 199, 190, 1);
+    font-size: 16px;
+    align-self: center;
+}
+
+.input-label {
+    align-self: start;
+    margin-top: 105px;
+}
+
+.input-field {
+    border-radius: 11px;
+    background-color: rgba(45, 48, 62, 1);
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+    display: flex;
+    margin-top: 7px;
+    width: 100%;
+    height: 59px;
+    border: none;
+    padding: 0 15px;
+    color: #fff;
+}
+
+.phone-label {
+    align-self: start;
+    margin-top: 37px;
+}
+
+.submit-button {
+    border-radius: 21px;
+    background-color: rgba(255, 149, 0, 1);
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+    border: none;
+    align-self: center;
+    margin-top: 92px;
+    width: 221px;
+    max-width: 100%;
+    padding: 10px 70px;
+    color: #fff;
+    cursor: pointer;
+}
+
+.submit-button:hover {
+    opacity: 0.9;
+}
+
+.submit-button:focus {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+.footer-image {
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+    margin-top: -100px; /* Pull the image up to overlap with the form */
+    position: relative;
+    z-index: 1; /* Place behind the form */
+}
+
+.number-status {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    margin-top: 5px;
+    text-align: left;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+@media (max-width: 991px) {
+    .registration-container {
+        padding: 40px 20px 0;
+    }
+}
+
+@media (max-width: 640px) {
+    .header-title {
+        font-size: 28px;
+    }
+    .registration-form {
+        padding: 20px 20px 40px;
+    }
+    .input-label {
+        margin-top: 60px;
+    }
+    .submit-button {
+        margin-top: 60px;
+    }
+}
+</style>
+
+<script>
+document.getElementById('phone_number').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '').slice(0, 10);
+    e.target.value = value;
+
+    const status = document.getElementById('number-status');
+    if (value.length > 0) {
+        status.textContent = `${value.length}/10 digits entered`;
+        if (value.length === 10) {
+            status.textContent += ' - Valid number';
+            status.style.color = 'rgba(52, 199, 89, 1)';
+        } else {
+            status.style.color = 'rgba(255, 255, 255, 0.7)';
+        }
+    } else {
+        status.textContent = '';
+    }
+});
+
+document.getElementById('patientForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const phoneNumber = document.getElementById('phone_number').value;
+    if(phoneNumber.length !== 10) {
+        alert('Please enter a valid 10-digit number');
+        return;
+    }
+    this.submit();
+});
+</script>
+{% endblock %}

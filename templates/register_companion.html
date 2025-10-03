@@ -1,0 +1,213 @@
+{% extends "companion_base.html" %}
+
+{% block content %}
+<div class="registration-container">
+    <h1 class="title">HOSPITAL BYSTANDER<br>CALLER</h1>
+
+    <form method="POST" id="companionForm" class="registration-form">
+        {{ form.csrf_token }}
+        <h2 class="form-title">Add Patient Details</h2>
+
+        <label for="patient_name" class="input-label">Patient Name</label>
+        <input type="text"
+               id="patient_name"
+               name="patient_name"
+               class="input-field"
+               required>
+
+        <label for="phone" class="phone-label">Your Phone Number</label>
+        <div class="phone-input-container">
+            <div class="phone-prefix">+91</div>
+            <input type="tel"
+                   id="phone"
+                   name="phone"
+                   class="input-field"
+                   pattern="[0-9]*"
+                   inputmode="numeric"
+                   maxlength="10"
+                   placeholder="Enter 10-digit number"
+                   required>
+        </div>
+        <div id="number-status" class="number-status"></div>
+
+        <button type="submit" class="submit-button">Register</button>
+    </form>
+    <div class="footer-image-container">
+        <img loading="lazy" src="{{ url_for('static', filename='images/hospital-footer.png') }}" class="footer-image" alt="Hospital illustration">
+    </div>
+</div>
+
+<style>
+.registration-container {
+    background: rgba(37, 40, 54, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 40px 20px;
+    color: #fff;
+    position: relative;
+}
+
+.title{font-size:36px;font-family:'Gilroy-Bold',sans-serif;text-align:center;margin-bottom:30px;letter-spacing:1px}
+
+.registration-form {
+    background: rgba(31, 29, 43, 1);
+    border-radius: 40px;
+    padding: 30px 25px;
+    width: 100%;
+    max-width: 390px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 2;
+    margin-bottom: 40px;
+}
+
+.form-title {
+    color: rgba(0, 199, 190, 1);
+    font-size: 16px;
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.input-label {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: white;
+    align-self: flex-start;
+}
+
+.input-field {
+    border-radius: 15px;
+    background: rgba(45, 48, 62, 1);
+    border: none;
+    height: 60px;
+    width: 100%;
+    padding: 0 15px;
+    color: white;
+    font-size: 18px;
+    margin-bottom: 30px;
+}
+
+.phone-input-container {
+    display: flex;
+    background: rgba(45, 48, 62, 1);
+    border-radius: 15px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.phone-prefix {
+    padding: 0 15px;
+    display: flex;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 18px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(45, 48, 62, 1);
+}
+
+.phone-input-container .input-field {
+    margin: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+.submit-button {
+    background: #FF9500;
+    border: none;
+    border-radius: 30px;
+    color: white;
+    padding: 15px 0;
+    font-size: 18px;
+    margin-top: 40px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.number-status {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    text-align: left;
+    margin-top: 5px;
+}
+
+.footer-image {
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+    margin-top: -100px; /* Pull the image up to overlap with the form */
+    position: relative;
+    z-index: 1; /* Place behind the form */
+}
+
+/* Remove autofill styles */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-text-fill-color: white;
+    -webkit-box-shadow: 0 0 0px 1000px rgba(45, 48, 62, 1) inset;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+@media (max-width: 640px) {
+    .header-title {
+        font-size: 28px;
+    }
+    .form-title {
+        font-size: 14px;
+    }
+    .input-label {
+        font-size: 20px;
+    }
+    .registration-container {
+        padding: 20px;
+    }
+}
+</style>
+
+<script>
+document.getElementById('phone').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '').slice(0, 10);
+    e.target.value = value;
+
+    const status = document.getElementById('number-status');
+    if (value.length > 0) {
+        status.textContent = `${value.length}/10 digits entered`;
+        if (value.length === 10) {
+            status.textContent += ' - Valid number';
+            status.style.color = 'rgba(52, 199, 89, 1)';
+        } else {
+            status.style.color = 'rgba(255, 255, 255, 0.7)';
+        }
+    } else {
+        status.textContent = '';
+    }
+});
+
+document.getElementById('companionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const phoneNumber = document.getElementById('phone').value;
+
+    if(phoneNumber.length !== 10) {
+        alert('Please enter a valid 10-digit number');
+        return;
+    }
+
+    const hiddenInput = document.createElement('input');
+    hiddenInput.type = 'hidden';
+    hiddenInput.name = 'full_phone';
+    hiddenInput.value = '+91' + phoneNumber;
+    this.appendChild(hiddenInput);
+
+    this.submit();
+});
+
+// Prevent going back
+history.pushState(null, null, location.href);
+window.onpopstate = function() {
+    history.go(1);
+};
+</script>
+{% endblock %}

@@ -1,0 +1,703 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="registration-container">
+    <button class="registration-button"
+            id="registrationToggle"
+            data-enabled="{{ registration_enabled }}"
+            tabindex="0">
+        {{ 'DISABLE' if registration_enabled else 'ENABLE' }} REGISTRATION
+    </button>
+    <!-- Add popup container here -->
+    <div class="popup-container">
+        <div id="popupMessage" class="popup-message"></div>
+    </div>
+    <section class="bystander-details" aria-label="Bystander Details">
+        <div class="header-container">
+            <input type="checkbox" class="checkbox" id="select-all" aria-label="Select all bystanders" tabindex="0">
+            <h2>BYSTANDER DETAILS</h2>
+        </div>
+
+        <hr class="divider">
+
+        {% for patient in current_user.patients %}
+        <div class="bystander-row">
+            <div class="bystander-info">
+                <input type="checkbox" class="checkbox patient-select"
+                       data-patient-id="{{ patient.id }}"
+                       aria-label="Select {{ patient.patient_name }}"
+                       tabindex="0">
+                <span>{{ patient.patient_name|upper }}</span>
+            </div>
+            <div class="action-buttons">
+                <button class="call-button"
+                        data-patient-id="{{ patient.id }}"
+                        tabindex="0">CALL</button>
+                <button class="remove-button"
+                        data-patient-id="{{ patient.id }}"
+                        tabindex="0">REMOVE</button>
+            </div>
+        </div>
+        <span class="phone-number">{{ patient.phone_number }}</span>
+        <hr class="divider-gray">
+        {% endfor %}
+
+        <button class="call-selected-button" id="call-selected" tabindex="0" style="display: none;">
+            Call Selected
+        </button>
+        <button class="remove-selected-button" id="remove-selected" tabindex="0" style="display: none;">
+            Remove Selected
+        </button>
+    </section>
+
+    <section class="status-table" aria-label="Call Status Table">
+        <table class="call-logs-table">
+            <thead>
+                <tr>
+                    <th class="th-name">Name</th>
+                    <th class="th-phone">Phone</th>
+                    <th class="th-time">Time</th>
+                    <th class="th-status">Status</th>
+                    <th class="th-duration">Duration</th>
+                </tr>
+            </thead>
+            <tbody id="call-logs-body">
+                <!-- Call logs will be populated here dynamically -->
+            </tbody>
+        </table>
+    </section>
+</div>
+
+<style>
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+.registration-button[data-enabled="true"]{background:#FF2D55;color:#fff}
+.registration-button[data-enabled="false"]{background:#006AFF;color:#fff}
+.registration-button {
+    background: #FF2D55;
+    color: #fff;
+    border-radius: 40px;
+    width: 100%;
+    max-width: 100%;
+    padding: 15px;
+    font: 500 17px Inter, sans-serif;
+    border: none;
+    transition: all .3s ease;
+    text-transform: uppercase;
+    margin-top: 30px; /* Reduced from 80px to 20px */
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+    position: relative;
+    z-index: 10;
+}
+.call-button, .remove-button, .call-selected-button, .remove-selected-button{color: white;border: none;cursor: pointer;}
+.bystander-details{border-radius:25px;background:#1f1d2b;box-shadow:0 4px 20px rgba(0,0,0,0.1);display:flex;width:100%;flex-direction:column;padding:20px;margin-bottom:20px}
+
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Align items to start */
+    margin-bottom: 15px;
+    padding: 0 10px;
+    width: 100%;
+}
+
+.header-container h2 {
+    color: #fff;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    margin-left: 15px;
+    display: flex;
+    align-items: center;
+    white-space: nowrap; /* Prevent text wrapping */
+}
+
+.checkbox {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    background: rgba(217, 217, 217, 1);
+    border-radius: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+.checkbox {
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.divider, .divider-gray {
+    width: 100%;
+    max-width: 100%;
+    height: 1px;
+    margin: 15px 0;
+}
+
+.divider {
+    border: 1px solid rgb(255, 106, 0);
+}
+
+.divider-gray {
+    border: 1px solid rgba(153, 153, 153, 0.5);
+    margin-top: 15px;
+}
+
+.bystander-row {
+    display: flex;
+    margin-top: 20px;  /* Reduced from 41px */
+    width: 100%;
+    gap: 20px;
+    font-family: Inter, sans-serif;
+    white-space: nowrap;
+    justify-content: space-between;
+    padding: 0 10px;  /* Add padding for alignment */
+}
+
+.bystander-info {
+    align-self: start;
+    display: flex;
+    gap: 15px;  /* Reduced from 31px */
+    font-size: 17px;
+    font-weight: 400;
+    align-items: center;  /* Center align checkbox with text */
+}
+.bystander-info span {
+    color: #fff;
+    margin-top: 2px; /* Slight adjustment for vertical alignment */
+}
+.action-buttons {
+  display: flex;
+  align-items: start;
+  gap: 40px 43px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.call-button {
+  border-radius: 12px;
+  background: rgba(52, 199, 89, 1);
+  padding: 5px 21px;
+}
+
+.remove-button {
+  border-radius: 12px;
+  background: rgba(255, 45, 85, 1);
+  padding: 5px 10px;
+}
+
+.phone-number {
+    color: #4a9eff;  /* Blue color from screenshot */
+    align-self: start;
+    margin: 7px 0 0 45px;  /* Aligned with the patient name */
+    font: 400 11px Inter, sans-serif;
+    text-decoration: none;
+    display: block;
+}
+
+
+.call-selected-button, .remove-selected-button {
+    border-radius: 15px;
+    padding: 8px 27px;
+    font: 10px Amiko, sans-serif;
+    margin-top: 10px;
+    margin-right: 10px;
+}
+.call-selected-button {
+    background: rgba(52, 199, 89, 1);
+}
+
+.remove-selected-button {
+    background: rgb(255, 45, 45);
+}
+.button-container {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    margin-top: 20px;
+}
+.status-table {
+    border-radius: 25px;
+    background: rgba(31, 29, 43, 1);
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+    margin-top: 43px;
+    width: 100%;
+    padding: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+.call-logs-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: white;
+    font-family: Inter, sans-serif;
+}
+
+.call-logs-table thead {
+    position: sticky;
+    top: 0;
+    background: rgba(31, 29, 43, 1);
+    z-index: 1;
+}
+
+.call-logs-table th {
+    padding: 15px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    white-space: nowrap;
+    color: #fff;
+}
+
+.call-logs-table td {
+    padding: 12px 15px;
+    font-size: 11px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    vertical-align: middle;
+}
+/* Fixed column widths */
+.th-name,
+.call-logs-table td:nth-child(1) {
+    width: 25%;
+}
+.th-phone,
+.call-logs-table td:nth-child(2) {
+    width: 20%;
+}
+.th-time,
+.call-logs-table td:nth-child(3) {
+    width: 20%;
+}
+.th-status,
+.call-logs-table td:nth-child(4) {
+    width: 20%;
+    text-align: center;
+}
+.th-duration,
+.call-logs-table td:nth-child(5) {
+    width: 15%;
+    text-align: right;
+}
+.popup-message {
+    display: none;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(31, 29, 43, 0.95);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: 500;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    margin-top: 20px;
+    text-align: center;
+    min-width: 250px;
+}
+.popup-container {
+    position: relative;
+    width: 100%;
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+.table-header, .table-row {
+    display: grid;
+    grid-template-columns: 1.5fr 1.5fr 1fr 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    align-items: center;
+    padding: 8px 15px; /* Increased padding */
+}
+
+.table-row {
+    display: grid; /* Changed from flex to grid */
+    margin-top: 0; /* Removed excessive margin */
+    padding: 10px 15px; /* Consistent padding */
+}
+
+.table-header div {
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.timestamp-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.timestamp-container .date {
+    color: #fff;
+    font-size: 11px;
+}
+
+.timestamp-container .time {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 10px;
+}
+/* Status badge styles */
+.status-completed,
+.status-failed,
+.status-no-answer {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 11px;
+    text-align: center;
+}
+
+.status-completed {
+    background-color: rgba(52, 199, 89, 0.2);
+    color: #34C759;
+    border: 1px solid #34C759;
+}
+
+.status-failed {
+    background-color: rgba(255, 45, 85, 0.2);
+    color: #FF2D55;
+    border: 1px solid #FF2D55;
+}
+
+.status-no-answer {
+    background-color: rgba(255, 149, 0, 0.2);
+    color: #FF9500;
+    border: 1px solid #FF9500;
+}
+@media (max-width: 640px) {
+    .action-buttons {
+        gap: 10px;
+    }
+
+    .table-row, .table-header {
+        font-size: 10px;
+    }
+
+    .bystander-info {
+        gap: 15px;
+    }
+}
+@media (max-width: 991px) {
+    .registration-container {
+        max-width: 100%;
+        padding: 0 26px;
+        margin-top: 80px; /* Changed from -60px to -20px */
+    }
+}
+.main-content {
+    padding-top: 0;  /* Remove top padding from main content */
+}
+
+
+@media (max-width: 640px) {
+  .bystander-image {
+    width: 120px;
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+.loading {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.error-message {
+    color: #FF2D55;
+    font-size: 12px;
+    margin: 10px 0;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showPopupMessage(message) {
+    const popup = document.getElementById('popupMessage');
+    popup.textContent = message;
+    popup.style.display = 'block';
+
+    // Remove the popup after 2 seconds
+    setTimeout(() => {
+        popup.style.display = 'none';
+    }, 2000);
+}
+document.addEventListener('DOMContentLoaded', async function() {
+    // Check for success message in URL (Add this at the start of the function)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('success')) {
+        showPopupMessage('Patient added successfully');
+        // Clean the URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const logsContainer = document.getElementById('call-logs-body');
+    const loadingElement = document.createElement('div');
+    loadingElement.className = 'text-center p-4';
+    loadingElement.textContent = 'Loading...';
+
+    // Registration toggle functionality
+    const registrationToggle = document.getElementById('registrationToggle');
+
+    if (registrationToggle) {
+        registrationToggle.addEventListener('click', async function() {
+            try {
+                const response = await fetch('/api/toggle-registration', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    }
+                });
+
+                const data = await response.json();
+                if (data.status === 'success') {
+                    this.textContent = data.enabled ? 'DISABLE REGISTRATION' : 'ENABLE REGISTRATION';
+                    this.setAttribute('data-enabled', data.enabled);
+                } else {
+                    alert('Error toggling registration status');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error updating registration status');
+            }
+        });
+    }
+    // Create the button container
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'button-container';
+    document.querySelector('.bystander-details').appendChild(buttonContainer);
+    // Bulk selection functionality
+    const selectAllCheckbox = document.getElementById('select-all');
+    const patientCheckboxes = document.querySelectorAll('.patient-select');
+    const callSelectedButton = document.getElementById('call-selected');
+    const removeSelectedButton = document.getElementById('remove-selected');
+    buttonContainer.appendChild(callSelectedButton);
+    buttonContainer.appendChild(removeSelectedButton);
+    function updateCallSelectedButton() {
+        const selectedCount = document.querySelectorAll('.patient-select:checked').length;
+        if (callSelectedButton && removeSelectedButton) {
+            const displayStyle = selectedCount > 0 ? 'inline-block' : 'none';
+            callSelectedButton.style.display = displayStyle;
+            removeSelectedButton.style.display = displayStyle;
+        }
+    }
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            patientCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateCallSelectedButton();
+        });
+    }
+
+    patientCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateCallSelectedButton);
+    });
+    // Load and display call logs
+    function getStatusClass(status) {
+        switch(status.toLowerCase()) {
+            case 'completed': return 'status-completed';
+            case 'failed': return 'status-failed';
+            case 'no-answer': return 'status-no-answer';
+            default: return '';
+        }
+    }
+
+    async function loadCallLogs() {
+        try {
+            const response = await fetch('/api/call-logs');
+            const logs = await response.json();
+            const logsContainer = document.getElementById('call-logs-body');
+
+            logsContainer.innerHTML = logs.map(log => {
+                const statusClass = getStatusClass(log.status);
+                const [date, time] = log.timestamp.split(' ');
+                return `
+                    <tr>
+                        <td>${log.patient_name || 'Unknown'}</td>
+                        <td>${log.phone_number}</td>
+                        <td>
+                            <div class="timestamp-container">
+                                <div class="date">${date}</div>
+                                <div class="time">${time}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="${statusClass}">${log.status}</span>
+                        </td>
+                        <td>${log.duration}s</td>
+                    </tr>
+                `;
+            }).join('');
+        } catch (error) {
+            console.error('Error loading call logs:', error);
+        }
+    }
+    // Initial call log load and refresh every 30 seconds
+    await loadCallLogs();
+    setInterval(loadCallLogs, 30000);
+
+    // Call and Remove button handlers
+    document.querySelectorAll('.call-button').forEach(button => {
+        button.addEventListener('click', async function() {
+            const patientId = this.getAttribute('data-patient-id');
+            if (!confirm('Are you sure you want to make this call?')) return;
+
+            try {
+                const response = await fetch('/api/make-call', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({ patient_id: patientId })
+                });
+
+                const data = await response.json();
+                if (data.status === 'success') {
+                    alert('Call initiated successfully!');
+                    await loadCallLogs();
+                } else {
+                    alert('Error making call: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error making call. Please try again.');
+            }
+        });
+    });
+    // Add Remove Selected functionality
+    document.getElementById('remove-selected').addEventListener('click', async function() {
+        if (!confirm('Are you sure you want to remove all selected patients?')) return;
+
+        const selectedPatients = Array.from(document.querySelectorAll('.patient-select:checked'))
+            .map(checkbox => checkbox.dataset.patientId);
+
+        try {
+            const response = await fetch('/api/bulk-remove-patients', { // Verify endpoint
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ patient_ids: selectedPatients })
+            });
+
+            const data = await response.json();
+            if (data.status === 'success') {
+                // Remove selected patients from UI
+                document.querySelectorAll('.patient-select:checked').forEach(checkbox => {
+                    const row = checkbox.closest('.bystander-row');
+                    const phone = row.nextElementSibling;
+                    const divider = phone.nextElementSibling;
+                    row.remove();
+                    phone.remove();
+                    divider.remove();
+                });
+
+                // Reset selections
+                selectAllCheckbox.checked = false;
+                updateCallSelectedButton();
+            } else {
+                alert('Error removing patients: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error removing patients. Please try again.');
+        }
+    });
+    // Remove button functionality
+    document.querySelectorAll('.remove-button').forEach(button => {
+        button.addEventListener('click', async function() {
+            const patientId = this.getAttribute('data-patient-id');
+            if (!confirm('Are you sure you want to remove this patient?')) return;
+
+            try {
+                const response = await fetch(`/api/remove-patient/${patientId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    }
+                });
+
+                const data = await response.json();
+                if (data.status === 'success') {
+                    // Remove the patient row from the UI
+                    const row = this.closest('.bystander-row');
+                    const phone = row.nextElementSibling;
+                    const divider = phone.nextElementSibling;
+                    row.remove();
+                    phone.remove();
+                    divider.remove();
+                } else {
+                    alert('Error removing patient');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error removing patient. Please try again.');
+            }
+        });
+    });
+
+    // Call Selected functionality
+    if (callSelectedButton) {
+        callSelectedButton.addEventListener('click', async function() {
+            if (!confirm('Are you sure you want to call all selected patients?')) return;
+
+            const selectedPatients = Array.from(document.querySelectorAll('.patient-select:checked'))
+                .map(checkbox => checkbox.dataset.patientId);
+
+            try {
+                const response = await fetch('/api/bulk-call', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({ patient_ids: selectedPatients })
+                });
+
+                const data = await response.json();
+                if (data.status === 'success') {
+                    alert(`Successfully initiated ${data.calls.length} calls`);
+                    await loadCallLogs();
+
+                    // Reset selections
+                    selectAllCheckbox.checked = false;
+                    patientCheckboxes.forEach(checkbox => checkbox.checked = false);
+                    updateCallSelectedButton();
+                } else {
+                    alert('Error making bulk calls: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error making bulk calls. Please try again.');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,17 @@
+Flask==2.2.5
+Flask-SQLAlchemy==3.0.2
+Flask-Login==0.6.2
+twilio==7.17.0
+qrcode[pil]==7.3
+Pillow>=10.4.0
+python-dotenv==0.19.2
+Flask-WTF==0.15.1
+werkzeug==2.2.3
+SQLAlchemy==1.4.41
+gunicorn==20.1.0
+psycopg2-binary==2.9.5
+whitenoise==6.4.0
+python-json-logger==2.0.7
+Flask-Limiter==3.3.0
+flask-talisman==0.8.0
+Flask-Migrate==4.0.4
