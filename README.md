@@ -82,4 +82,4 @@ To generate QR codes for companions:
 
 This project is distributed under the Apache License 2.0. See the LICENSE file for the full text and the SPDX identifiers present at the top of each source file for per-file notices.
 
-If you reuse or publish work based on this codebase, please attribute Ikhlas as the 2025 copyright holder.
+If you reuse or publish work based on this codebase, please attribute Ashmil as the 2025 copyright holder.
