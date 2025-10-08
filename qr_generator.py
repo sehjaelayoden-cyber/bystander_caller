@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# Copyright (c) 2025 Ikhlas
+# Copyright (c) 2025 Ashmil
 
 import qrcode
 import json
